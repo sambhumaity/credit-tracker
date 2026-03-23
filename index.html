@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Credit Tracker Pro+</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1d2671, #c33764);
+    margin: 0;
+}
+
+.container {
+    width: 360px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 8px;
+    background: #1d2671;
+    color: white;
+    cursor: pointer;
+}
+
+.balance, .summary {
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+li {
+    background: #f1f1f1;
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.credit { color: green; }
+.debit { color: red; }
+
+.small-btn {
+    padding: 3px 6px;
+    font-size: 12px;
+    margin-left: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>💰 Credit Tracker Pro+</h2>
+
+    <input type="text" id="name" placeholder="Name">
+    <input type="number" id="amount" placeholder="Amount">
+
+    <select id="type">
+        <option value="credit">Credit</option>
+        <option value="debit">Debit</option>
+    </select>
+
+    <button onclick="addData()">➕ Add</button>
+
+    <input type="text" id="search" placeholder="🔍 Search..." onkeyup="renderData()">
+
+    <div class="balance">Balance: ₹ <span id="total">0</span></div>
+    <div class="summary">
+        Credit: ₹ <span id="creditTotal">0</span> |
+        Debit: ₹ <span id="debitTotal">0</span>
+    </div>
+
+    <button onclick="clearAll()">🗑️ Clear All</button>
+
+    <ul id="list"></ul>
+</div>
+
+<script>
+let dataList = JSON.parse(localStorage.getItem("dataList")) || [];
+let editIndex = -1;
+
+function renderData() {
+    let list = document.getElementById("list");
+    let search = document.getElementById("search").value.toLowerCase();
+
+    list.innerHTML = "";
+    let total = 0, creditTotal = 0, debitTotal = 0;
+
+    dataList.forEach((item, index) => {
+        if(!item.name.toLowerCase().includes(search)) return;
+
+        let li = document.createElement("li");
+
+        if(item.type === "credit") {
+            total += item.amount;
+            creditTotal += item.amount;
+        } else {
+            total -= item.amount;
+            debitTotal += item.amount;
+        }
+
+        li.innerHTML = `
+            <span class="${item.type}">
+                ${item.name} - ₹${item.amount}
+            </span>
+            <div>
+                <button class="small-btn" onclick="editData(${index})">✏️</button>
+                <button class="small-btn" onclick="deleteData(${index})">❌</button>
+            </div>
+        `;
+
+        list.appendChild(li);
+    });
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("creditTotal").innerText = creditTotal;
+    document.getElementById("debitTotal").innerText = debitTotal;
+}
+
+function addData() {
+    let name = document.getElementById("name").value;
+    let amount = parseInt(document.getElementById("amount").value);
+    let type = document.getElementById("type").value;
+
+    if(name === "" || isNaN(amount)) {
+        alert("Fill all fields!");
+        return;
+    }
+
+    if(editIndex === -1) {
+        dataList.push({name, amount, type});
+    } else {
+        dataList[editIndex] = {name, amount, type};
+        editIndex = -1;
+    }
+
+    localStorage.setItem("dataList", JSON.stringify(dataList));
+    renderData();
+
+    document.getElementById("name").value = "";
+    document.getElementById("amount").value = "";
+}
+
+function deleteData(index) {
+    dataList.splice(index, 1);
+    localStorage.setItem("dataList", JSON.stringify(dataList));
+    renderData();
+}
+
+function editData(index) {
+    let item = dataList[index];
+    document.getElementById("name").value = item.name;
+    document.getElementById("amount").value = item.amount;
+    document.getElementById("type").value = item.type;
+    editIndex = index;
+}
+
+function clearAll() {
+    if(confirm("সব delete করবে?")) {
+        dataList = [];
+        localStorage.removeItem("dataList");
+        renderData();
+    }
+}
+
+renderData();
+</script>
+
+</body>
+</html>
