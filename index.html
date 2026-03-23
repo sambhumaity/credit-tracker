@@ -13,29 +13,38 @@ body {
 
 .container {
     width: 360px;
-    margin: 40px auto;
+    margin: 30px auto;
     background: white;
     padding: 20px;
     border-radius: 15px;
 }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+h2 {
+    text-align: center;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 button {
-    width: 100%;
+    flex: 1;
     padding: 10px;
-    margin-top: 5px;
     border: none;
     border-radius: 8px;
     background: #1d2671;
     color: white;
     cursor: pointer;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 .balance, .summary {
@@ -47,8 +56,6 @@ button {
 ul {
     list-style: none;
     padding: 0;
-    max-height: 220px;
-    overflow-y: auto;
 }
 
 li {
@@ -68,6 +75,14 @@ li {
     font-size: 12px;
     margin-left: 5px;
 }
+
+#historyTab {
+    display: none;
+    background: #222;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+}
 </style>
 </head>
 
@@ -76,32 +91,55 @@ li {
 <div class="container">
     <h2>💰 Credit Tracker Pro+</h2>
 
-    <input type="text" id="name" placeholder="Name">
-    <input type="number" id="amount" placeholder="Amount">
-
-    <select id="type">
-        <option value="credit">Credit</option>
-        <option value="debit">Debit</option>
-    </select>
-
-    <button onclick="addData()">➕ Add</button>
-
-    <input type="text" id="search" placeholder="🔍 Search..." onkeyup="renderData()">
-
-    <div class="balance">Balance: ₹ <span id="total">0</span></div>
-    <div class="summary">
-        Credit: ₹ <span id="creditTotal">0</span> |
-        Debit: ₹ <span id="debitTotal">0</span>
+    <div class="tabs">
+        <button onclick="showTab('main')">🏠 Main</button>
+        <button onclick="showTab('history')">📂 History</button>
     </div>
 
-    <button onclick="clearAll()">🗑️ Clear All</button>
+    <!-- MAIN TAB -->
+    <div id="mainTab">
 
-    <ul id="list"></ul>
+        <input type="text" id="name" placeholder="Name">
+        <input type="number" id="amount" placeholder="Amount">
+
+        <select id="type">
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+        </select>
+
+        <button onclick="addData()">➕ Add</button>
+
+        <input type="text" id="search" placeholder="🔍 Search..." onkeyup="renderData()">
+
+        <div class="balance">Balance: ₹ <span id="total">0</span></div>
+        <div class="summary">
+            Credit: ₹ <span id="creditTotal">0</span> |
+            Debit: ₹ <span id="debitTotal">0</span>
+        </div>
+
+        <button onclick="clearAll()">🗑️ Clear All</button>
+
+        <ul id="list"></ul>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="historyTab">
+        <h3>📂 Saved History</h3>
+        <ul id="historyList"></ul>
+    </div>
 </div>
 
 <script>
 let dataList = JSON.parse(localStorage.getItem("dataList")) || [];
 let editIndex = -1;
+
+// Tab switch
+function showTab(tab) {
+    document.getElementById("mainTab").style.display = "none";
+    document.getElementById("historyTab").style.display = "none";
+
+    document.getElementById(tab + "Tab").style.display = "block";
+}
 
 function renderData() {
     let list = document.getElementById("list");
@@ -139,6 +177,20 @@ function renderData() {
     document.getElementById("total").innerText = total;
     document.getElementById("creditTotal").innerText = creditTotal;
     document.getElementById("debitTotal").innerText = debitTotal;
+
+    renderHistory();
+}
+
+// History render
+function renderHistory() {
+    let historyList = document.getElementById("historyList");
+    historyList.innerHTML = "";
+
+    dataList.forEach(item => {
+        let li = document.createElement("li");
+        li.innerText = `${item.name} - ₹${item.amount} (${item.type})`;
+        historyList.appendChild(li);
+    });
 }
 
 function addData() {
