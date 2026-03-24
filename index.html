@@ -2,22 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Khata Premium</title>
+<title>Sambhu Khata</title>
 
 <style>
 body {
     font-family: Arial;
     background: linear-gradient(135deg,#1d2671,#c33764);
     margin:0;
-}
-
-#loginPage, #signupPage {
-    width:300px;
-    margin:100px auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    text-align:center;
 }
 
 .container {
@@ -41,8 +32,6 @@ button {
     border:none;
 }
 
-.hidden { display:none; }
-
 li {
     background:#f9f9f9;
     margin:6px 0;
@@ -52,40 +41,16 @@ li {
     justify-content:space-between;
 }
 
-.credit { color:red; font-weight:bold; }   /* তুমি টাকা পাবে */
-.debit { color:green; font-weight:bold; } /* তুমি টাকা দেবে */
+.credit { color:red; font-weight:bold; }
+.debit { color:green; font-weight:bold; }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage">
-<h2>🔐 Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<button onclick="showSignup()">Signup</button>
-</div>
+<div class="container">
 
-<!-- SIGNUP -->
-<div id="signupPage" class="hidden">
-<h2>Signup</h2>
-<input id="newUser" placeholder="Username">
-<input id="newPass" type="password" placeholder="Password">
-<button onclick="signup()">Create</button>
-<button onclick="showLogin()">Back</button>
-</div>
-
-<!-- APP -->
-<div class="container hidden" id="appPage">
-
-<h2>📒 My Khata Premium</h2>
-
-<button onclick="logout()">Logout</button>
-
-<input id="newPassword" type="password" placeholder="Change Password">
-<button onclick="changePassword()">Change Password</button>
+<h2>📒 Sambhu Khata</h2>
 
 <input id="searchCustomer" placeholder="Search" onkeyup="renderCustomers()">
 
@@ -98,13 +63,14 @@ li {
 
 <div id="selectedInfo"></div>
 
-<div id="transactionSection" class="hidden">
+<div id="transactionSection" style="display:none;">
 
 <h3 id="customerTitle"></h3>
 
 <input id="amount" type="number" placeholder="Amount">
 <input id="date" type="date">
 <input id="reminderDate" type="date">
+<input id="note" type="text" placeholder="📝 Add note">
 
 <button onclick="addTransaction('credit')">Credit</button>
 <button onclick="addTransaction('debit')">Debit</button>
@@ -124,64 +90,31 @@ Balance: ₹ <span id="balance">0</span>
 </div>
 
 <script>
-let users = JSON.parse(localStorage.getItem("users")) || {};
-let currentUser = localStorage.getItem("currentUser");
-let customers = currentUser && users[currentUser] ? users[currentUser].customers : {};
+// 🔥 YOUR DATA RESTORED
+let customers = {
+"subhankar":[],
+"abu babu":[],
+"papu pici ghar":[],
+"arghya":[],
+"Arghya wife":[],
+"dr. satyajit":[],
+"suva biker jone":[],
+"Prasenjit Barhat":[],
+"Braja Babu":[
+{"amount":600,"type":"credit","date":"","reminder":""},
+{"amount":4000,"type":"credit","date":"","reminder":""}
+],
+"Amiya":[],
+"Paritosh":[],
+"bisu Pnb":[],
+"Chayanika Studio":[],
+"HM PINTU":[]
+};
 
-// LOGIN
-function login(){
-    let u=username.value, p=password.value;
-    if(users[u] && users[u].password===p){
-        localStorage.setItem("loggedIn","true");
-        localStorage.setItem("currentUser",u);
-        location.reload();
-    } else alert("Wrong login");
-}
+// save once
+localStorage.setItem("customers", JSON.stringify(customers));
 
-// SIGNUP
-function signup(){
-    let u=newUser.value, p=newPass.value;
-    if(users[u]) return alert("User exists");
-
-    users[u]={password:p, customers:{}};
-    localStorage.setItem("users",JSON.stringify(users));
-    alert("Account created");
-    showLogin();
-}
-
-function showSignup(){
-    loginPage.style.display="none";
-    signupPage.classList.remove("hidden");
-}
-
-function showLogin(){
-    signupPage.classList.add("hidden");
-    loginPage.style.display="block";
-}
-
-function showApp(){
-    loginPage.style.display="none";
-    signupPage.style.display="none";
-    appPage.classList.remove("hidden");
-}
-
-if(localStorage.getItem("loggedIn")==="true" && currentUser) showApp();
-
-// LOGOUT
-function logout(){
-    localStorage.removeItem("loggedIn");
-    localStorage.removeItem("currentUser");
-    location.reload();
-}
-
-// PASSWORD
-function changePassword(){
-    users[currentUser].password=newPassword.value;
-    localStorage.setItem("users",JSON.stringify(users));
-    alert("Changed");
-}
-
-// CUSTOMER
+// ADD CUSTOMER
 function addCustomer(){
     let name=customerName.value;
     if(!name) return alert("Enter name");
@@ -192,7 +125,7 @@ function addCustomer(){
     customerName.value="";
 }
 
-// DROPDOWN + BALANCE
+// DROPDOWN
 function renderCustomers(){
     let dropdown=customerDropdown;
     let search=searchCustomer.value.toLowerCase();
@@ -219,7 +152,7 @@ function renderCustomers(){
     }
 }
 
-// SELECT CUSTOMER + INFO
+// SELECT
 function selectCustomer(){
     let name=customerDropdown.value;
     if(!name) return;
@@ -244,7 +177,6 @@ function selectCustomer(){
     }
     else{
         info.innerHTML="All clear";
-        info.style.color="black";
     }
 
     openCustomer(name);
@@ -253,24 +185,36 @@ function selectCustomer(){
 // OPEN
 function openCustomer(name){
     customerTitle.innerText=name;
-    transactionSection.classList.remove("hidden");
+    document.getElementById("transactionSection").style.display="block";
     window.currentCustomer=name;
     renderTransactions();
 }
 
-// TRANSACTION
+// ADD TRANSACTION
 function addTransaction(type){
     let amt=parseInt(amount.value);
     let d=date.value;
     let r=reminderDate.value;
+    let noteVal=note.value;
 
     if(isNaN(amt)) return alert("Enter amount");
 
-    customers[currentCustomer].push({amount:amt,type,date:d,reminder:r});
+    customers[currentCustomer].push({
+        amount:amt,
+        type,
+        date:d,
+        reminder:r,
+        note:noteVal
+    });
+
     save();
     renderTransactions();
+
+    amount.value="";
+    note.value="";
 }
 
+// RENDER
 function renderTransactions(){
     let list=transactions;
     list.innerHTML="";
@@ -287,7 +231,8 @@ function renderTransactions(){
         <span class="${i.type}">
         ${i.type==="credit"?"➕":"➖"} ₹${i.amount}
         (${i.date||""})<br>
-        🔔 ${i.reminder||"No"}
+        🔔 ${i.reminder||"No"}<br>
+        📝 ${i.note||"No note"}
         </span>
         <button onclick="deleteTransaction(${index})">❌</button>
         `;
@@ -300,6 +245,7 @@ function renderTransactions(){
     balance.innerText=credit-debit;
 }
 
+// DELETE
 function deleteTransaction(i){
     customers[currentCustomer].splice(i,1);
     save();
@@ -307,27 +253,12 @@ function deleteTransaction(i){
 }
 
 function goBack(){
-    transactionSection.classList.add("hidden");
+    document.getElementById("transactionSection").style.display="none";
 }
-
-// REMINDER
-function checkReminders(){
-    let today=new Date().toISOString().split("T")[0];
-
-    for(let c in customers){
-        customers[c].forEach(i=>{
-            if(i.reminder && i.reminder<=today && i.type==="credit"){
-                alert(`🔔 ${c} did not pay`);
-            }
-        });
-    }
-}
-setTimeout(checkReminders,2000);
 
 // SAVE
 function save(){
-    users[currentUser].customers=customers;
-    localStorage.setItem("users",JSON.stringify(users));
+    localStorage.setItem("customers", JSON.stringify(customers));
 }
 
 renderCustomers();
