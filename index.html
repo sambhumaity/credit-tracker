@@ -2,244 +2,299 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Credit Tracker Pro+</title>
+<title>My Khata Ultimate</title>
 
 <style>
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #1d2671, #c33764);
-    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#1d2671,#c33764);
+    margin:0;
 }
 
+/* LOGIN + SIGNUP */
+#loginPage, #signupPage {
+    width:300px;
+    margin:100px auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+}
+
+/* APP */
 .container {
-    width: 360px;
-    margin: 30px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
+    width:370px;
+    margin:20px auto;
+    background:white;
+    padding:15px;
+    border-radius:15px;
 }
 
-h2 {
-    text-align: center;
-}
-
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+input, button {
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    border-radius:8px;
 }
 
 button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #1d2671;
-    color: white;
-    cursor: pointer;
+    background:#1d2671;
+    color:white;
+    border:none;
+    cursor:pointer;
 }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+.customer {
+    background:#eee;
+    padding:10px;
+    margin:5px 0;
+    border-radius:8px;
+    cursor:pointer;
 }
 
-.balance, .summary {
-    text-align: center;
-    margin: 10px 0;
-    font-weight: bold;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-}
+.hidden { display:none; }
 
 li {
-    background: #f1f1f1;
-    margin: 5px 0;
-    padding: 8px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
+    background:#f9f9f9;
+    margin:6px 0;
+    padding:10px;
+    border-radius:10px;
+    display:flex;
+    justify-content:space-between;
 }
 
-.credit { color: green; }
-.debit { color: red; }
+.credit { color:green; font-weight:bold; }
+.debit { color:red; font-weight:bold; }
 
-.small-btn {
-    padding: 3px 6px;
-    font-size: 12px;
-    margin-left: 5px;
-}
-
-#historyTab {
-    display: none;
-    background: #222;
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-}
+.icon { margin-right:5px; }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h2>💰 Credit Tracker Pro+</h2>
+<!-- LOGIN -->
+<div id="loginPage">
+    <h2>🔐 Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="showSignup()">📝 Signup</button>
+</div>
 
-    <div class="tabs">
-        <button onclick="showTab('main')">🏠 Main</button>
-        <button onclick="showTab('history')">📂 History</button>
-    </div>
+<!-- SIGNUP -->
+<div id="signupPage" class="hidden">
+    <h2>📝 Signup</h2>
+    <input type="text" id="newUser" placeholder="New Username">
+    <input type="password" id="newPass" placeholder="New Password">
+    <button onclick="signup()">Create Account</button>
+    <button onclick="showLogin()">⬅️ Back</button>
+</div>
 
-    <!-- MAIN TAB -->
-    <div id="mainTab">
+<!-- APP -->
+<div class="container hidden" id="appPage">
 
-        <input type="text" id="name" placeholder="Name">
-        <input type="number" id="amount" placeholder="Amount">
+<h2>📒 My Khata ULTIMATE</h2>
 
-        <select id="type">
-            <option value="credit">Credit</option>
-            <option value="debit">Debit</option>
-        </select>
+<button onclick="logout()">🚪 Logout</button>
 
-        <button onclick="addData()">➕ Add</button>
+<input type="password" id="newPassword" placeholder="Change Password">
+<button onclick="changePassword()">🔑 Change Password</button>
 
-        <input type="text" id="search" placeholder="🔍 Search..." onkeyup="renderData()">
+<input type="text" id="searchCustomer" placeholder="🔍 Search" onkeyup="renderCustomers()">
 
-        <div class="balance">Balance: ₹ <span id="total">0</span></div>
-        <div class="summary">
-            Credit: ₹ <span id="creditTotal">0</span> |
-            Debit: ₹ <span id="debitTotal">0</span>
-        </div>
+<input type="text" id="customerName" placeholder="Add Customer">
+<button onclick="addCustomer()">➕ Add Customer</button>
 
-        <button onclick="clearAll()">🗑️ Clear All</button>
+<div id="customerList"></div>
 
-        <ul id="list"></ul>
-    </div>
+<div id="transactionSection" class="hidden">
 
-    <!-- HISTORY TAB -->
-    <div id="historyTab">
-        <h3>📂 Saved History</h3>
-        <ul id="historyList"></ul>
-    </div>
+<h3 id="customerTitle"></h3>
+
+<input type="number" id="amount" placeholder="Amount">
+<input type="date" id="date">
+
+<button onclick="addTransaction('credit')">➕ Credit</button>
+<button onclick="addTransaction('debit')">➖ Debit</button>
+
+<h4>
+Credit: ₹ <span id="creditTotal">0</span> |
+Debit: ₹ <span id="debitTotal">0</span><br>
+Balance: ₹ <span id="balance">0</span>
+</h4>
+
+<ul id="transactions"></ul>
+
+<button onclick="goBack()">⬅️ Back</button>
+
+</div>
+
 </div>
 
 <script>
-let dataList = JSON.parse(localStorage.getItem("dataList")) || [];
-let editIndex = -1;
+let users = JSON.parse(localStorage.getItem("users")) || {};
+let currentUser = localStorage.getItem("currentUser");
+let customers = currentUser && users[currentUser] ? users[currentUser].customers : {};
 
-// Tab switch
-function showTab(tab) {
-    document.getElementById("mainTab").style.display = "none";
-    document.getElementById("historyTab").style.display = "none";
+// LOGIN
+function login() {
+    let user = username.value;
+    let pass = password.value;
 
-    document.getElementById(tab + "Tab").style.display = "block";
+    if(users[user] && users[user].password === pass) {
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("currentUser", user);
+        location.reload();
+    } else alert("Wrong login!");
 }
 
-function renderData() {
-    let list = document.getElementById("list");
-    let search = document.getElementById("search").value.toLowerCase();
+// SIGNUP
+function signup() {
+    let user = newUser.value;
+    let pass = newPass.value;
 
-    list.innerHTML = "";
-    let total = 0, creditTotal = 0, debitTotal = 0;
+    if(users[user]) return alert("User exists!");
 
-    dataList.forEach((item, index) => {
-        if(!item.name.toLowerCase().includes(search)) return;
+    users[user] = {password: pass, customers:{}};
+    localStorage.setItem("users", JSON.stringify(users));
 
-        let li = document.createElement("li");
+    alert("Account created!");
+    showLogin();
+}
 
-        if(item.type === "credit") {
-            total += item.amount;
-            creditTotal += item.amount;
-        } else {
-            total -= item.amount;
-            debitTotal += item.amount;
-        }
+// SHOW PAGE
+function showSignup() {
+    loginPage.style.display="none";
+    signupPage.classList.remove("hidden");
+}
 
-        li.innerHTML = `
+function showLogin() {
+    signupPage.classList.add("hidden");
+    loginPage.style.display="block";
+}
+
+function showApp() {
+    loginPage.style.display="none";
+    signupPage.style.display="none";
+    appPage.classList.remove("hidden");
+}
+
+// AUTO LOGIN
+if(localStorage.getItem("loggedIn")==="true" && currentUser) showApp();
+
+// LOGOUT
+function logout() {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("currentUser");
+    location.reload();
+}
+
+// CHANGE PASSWORD
+function changePassword() {
+    let newPass = newPassword.value;
+    users[currentUser].password = newPass;
+    localStorage.setItem("users", JSON.stringify(users));
+    alert("Password changed!");
+}
+
+// CUSTOMER
+function addCustomer() {
+    let name = customerName.value;
+    if(!name) return alert("Enter name");
+
+    if(!customers[name]) customers[name]=[];
+
+    save();
+    renderCustomers();
+    customerName.value="";
+}
+
+function renderCustomers() {
+    let list = customerList;
+    let search = searchCustomer.value.toLowerCase();
+    list.innerHTML="";
+
+    for(let name in customers){
+        if(!name.toLowerCase().includes(search)) continue;
+
+        let div=document.createElement("div");
+        div.className="customer";
+        div.innerText=name;
+        div.onclick=()=>openCustomer(name);
+        list.appendChild(div);
+    }
+}
+
+function openCustomer(name) {
+    currentCustomer=name;
+    customerTitle.innerText=name;
+
+    customerList.style.display="none";
+    transactionSection.classList.remove("hidden");
+
+    renderTransactions();
+}
+
+// TRANSACTION
+function addTransaction(type){
+    let amount=parseInt(amount.value);
+    let d=date.value;
+
+    if(isNaN(amount)) return alert("Enter amount");
+
+    customers[currentCustomer].push({amount,type,date:d});
+    save();
+    renderTransactions();
+
+    amount.value="";
+}
+
+function renderTransactions(){
+    let list=transactions;
+    list.innerHTML="";
+
+    let credit=0, debit=0;
+
+    customers[currentCustomer].forEach((item,index)=>{
+        let li=document.createElement("li");
+
+        if(item.type==="credit") credit+=item.amount;
+        else debit+=item.amount;
+
+        li.innerHTML=`
             <span class="${item.type}">
-                ${item.name} - ₹${item.amount}
+                <span class="icon">${item.type==="credit"?"➕":"➖"}</span>
+                ₹${item.amount} (${item.date||""})
             </span>
-            <div>
-                <button class="small-btn" onclick="editData(${index})">✏️</button>
-                <button class="small-btn" onclick="deleteData(${index})">❌</button>
-            </div>
+            <button onclick="deleteTransaction(${index})">❌</button>
         `;
 
         list.appendChild(li);
     });
 
-    document.getElementById("total").innerText = total;
-    document.getElementById("creditTotal").innerText = creditTotal;
-    document.getElementById("debitTotal").innerText = debitTotal;
-
-    renderHistory();
+    creditTotal.innerText=credit;
+    debitTotal.innerText=debit;
+    balance.innerText=credit-debit;
 }
 
-// History render
-function renderHistory() {
-    let historyList = document.getElementById("historyList");
-    historyList.innerHTML = "";
-
-    dataList.forEach(item => {
-        let li = document.createElement("li");
-        li.innerText = `${item.name} - ₹${item.amount} (${item.type})`;
-        historyList.appendChild(li);
-    });
+function deleteTransaction(index){
+    customers[currentCustomer].splice(index,1);
+    save();
+    renderTransactions();
 }
 
-function addData() {
-    let name = document.getElementById("name").value;
-    let amount = parseInt(document.getElementById("amount").value);
-    let type = document.getElementById("type").value;
-
-    if(name === "" || isNaN(amount)) {
-        alert("Fill all fields!");
-        return;
-    }
-
-    if(editIndex === -1) {
-        dataList.push({name, amount, type});
-    } else {
-        dataList[editIndex] = {name, amount, type};
-        editIndex = -1;
-    }
-
-    localStorage.setItem("dataList", JSON.stringify(dataList));
-    renderData();
-
-    document.getElementById("name").value = "";
-    document.getElementById("amount").value = "";
+function goBack(){
+    customerList.style.display="block";
+    transactionSection.classList.add("hidden");
 }
 
-function deleteData(index) {
-    dataList.splice(index, 1);
-    localStorage.setItem("dataList", JSON.stringify(dataList));
-    renderData();
+// SAVE
+function save(){
+    users[currentUser].customers = customers;
+    localStorage.setItem("users", JSON.stringify(users));
 }
 
-function editData(index) {
-    let item = dataList[index];
-    document.getElementById("name").value = item.name;
-    document.getElementById("amount").value = item.amount;
-    document.getElementById("type").value = item.type;
-    editIndex = index;
-}
-
-function clearAll() {
-    if(confirm("সব delete করবে?")) {
-        dataList = [];
-        localStorage.removeItem("dataList");
-        renderData();
-    }
-}
-
-renderData();
+renderCustomers();
 </script>
 
 </body>
