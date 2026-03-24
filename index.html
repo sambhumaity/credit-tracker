@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Sambhu Khata</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+
 <style>
 body {
     font-family: Arial;
@@ -20,6 +22,27 @@ body {
     padding:15px;
     border-radius:20px;
     backdrop-filter: blur(12px);
+}
+
+/* 🌈 MOVING GRADIENT TITLE */
+.title {
+    text-align:center;
+    font-family:'Poppins', sans-serif;
+    font-size:28px;
+    font-weight:bold;
+
+    background: linear-gradient(270deg,#ff7e5f,#feb47b,#36d1dc,#5b86e5,#ff7e5f);
+    background-size:1000% 100%;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    animation: gradientMove 6s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% {background-position:0%}
+    50% {background-position:100%}
+    100% {background-position:0%}
 }
 
 /* INPUT */
@@ -57,7 +80,6 @@ button:hover {
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:10px;
-    margin-bottom:10px;
 }
 
 .card {
@@ -66,27 +88,12 @@ button:hover {
     border-radius:12px;
     text-align:center;
     animation: float 3s ease-in-out infinite;
-    transition:0.4s;
-}
-
-.card:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow:0 0 20px rgba(255,255,255,0.2);
 }
 
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
-    100% { transform: translateY(0px); }
-}
-
-/* DROPDOWN */
-select option {
-    animation: fadeIn 0.5s ease-in;
-}
-
-select:hover {
-    box-shadow:0 0 10px rgba(255,255,255,0.4);
+    0% {transform: translateY(0px);}
+    50% {transform: translateY(-6px);}
+    100% {transform: translateY(0px);}
 }
 
 /* LIST */
@@ -97,22 +104,10 @@ li {
     border-radius:10px;
     display:flex;
     justify-content:space-between;
-    transition:0.3s;
 }
 
-li:hover {
-    transform: scale(1.03);
-    box-shadow:0 0 10px rgba(255,255,255,0.2);
-}
-
-.credit { color:#ff6b6b; font-weight:bold; }
-.debit { color:#00ffae; font-weight:bold; }
-
-/* TEXT ANIMATION */
-@keyframes fadeIn {
-    from { opacity:0; transform:translateY(5px); }
-    to { opacity:1; transform:translateY(0); }
-}
+.credit {color:#ff6b6b;}
+.debit {color:#00ffae;}
 </style>
 </head>
 
@@ -120,38 +115,33 @@ li:hover {
 
 <div class="container">
 
-<h2>📊 Sambhu Khata</h2>
+<h2 class="title">📊 Sambhu Khata</h2>
 
 <!-- DASHBOARD -->
 <div class="dashboard">
-<div class="card">💰 Total Credit<br><span id="totalCredit">0</span></div>
-<div class="card">💸 Total Debit<br><span id="totalDebit">0</span></div>
+<div class="card">💰 Credit<br><span id="totalCredit">0</span></div>
+<div class="card">💸 Debit<br><span id="totalDebit">0</span></div>
 <div class="card">📊 Balance<br><span id="totalBalance">0</span></div>
 <div class="card">👥 Customers<br><span id="totalCustomers">0</span></div>
 </div>
 
-<input id="searchCustomer" placeholder="🔍 Search" onkeyup="renderCustomers()">
-
+<input id="searchCustomer" placeholder="Search" onkeyup="renderCustomers()">
 <input id="customerName" placeholder="Add Customer">
-<button onclick="addCustomer()">➕ Add Customer</button>
+<button onclick="addCustomer()">Add Customer</button>
 
 <select id="customerDropdown" onchange="selectCustomer()">
 <option>Select Customer</option>
 </select>
 
-<div id="selectedInfo"></div>
-
 <div id="transactionSection" style="display:none;">
-
 <h3 id="customerTitle"></h3>
 
 <input id="amount" type="number" placeholder="Amount">
 <input id="date" type="date">
-<input id="reminderDate" type="date">
-<input id="note" placeholder="📝 Note">
+<input id="note" placeholder="Note">
 
-<button onclick="addTransaction('credit')">➕ Credit</button>
-<button onclick="addTransaction('debit')">➖ Debit</button>
+<button onclick="addTransaction('credit')">Credit</button>
+<button onclick="addTransaction('debit')">Debit</button>
 
 <h4>
 Credit: ₹ <span id="creditTotal">0</span> |
@@ -161,39 +151,31 @@ Balance: ₹ <span id="balance">0</span>
 
 <ul id="transactions"></ul>
 
-<button onclick="goBack()">⬅️ Back</button>
-
+<button onclick="goBack()">Back</button>
 </div>
 
 </div>
 
 <script>
-
-// LOAD DATA
 let customers = JSON.parse(localStorage.getItem("customers")) || {};
 
-// DASHBOARD
 function updateDashboard(){
-    let totalC=0,totalD=0;
-
-    for(let c in customers){
-        customers[c].forEach(i=>{
-            if(i.type==="credit") totalC+=i.amount;
-            else totalD+=i.amount;
+    let c=0,d=0;
+    for(let name in customers){
+        customers[name].forEach(i=>{
+            if(i.type==="credit") c+=i.amount;
+            else d+=i.amount;
         });
     }
-
-    document.getElementById("totalCredit").innerText = totalC;
-    document.getElementById("totalDebit").innerText = totalD;
-    document.getElementById("totalBalance").innerText = totalC-totalD;
-    document.getElementById("totalCustomers").innerText = Object.keys(customers).length;
+    totalCredit.innerText=c;
+    totalDebit.innerText=d;
+    totalBalance.innerText=c-d;
+    totalCustomers.innerText=Object.keys(customers).length;
 }
 
-// ADD CUSTOMER
 function addCustomer(){
     let name=customerName.value;
-    if(!name) return alert("Enter name");
-
+    if(!name) return;
     if(!customers[name]) customers[name]=[];
     save();
     renderCustomers();
@@ -201,57 +183,37 @@ function addCustomer(){
     customerName.value="";
 }
 
-// DROPDOWN
 function renderCustomers(){
-    let dropdown=customerDropdown;
-    let search=searchCustomer.value.toLowerCase();
-
-    dropdown.innerHTML=`<option>Select Customer</option>`;
-
+    customerDropdown.innerHTML="<option>Select Customer</option>";
     for(let name in customers){
-        if(!name.toLowerCase().includes(search)) continue;
-
-        let credit=0,debit=0;
-
+        let c=0,d=0;
         customers[name].forEach(i=>{
-            if(i.type==="credit") credit+=i.amount;
-            else debit+=i.amount;
+            if(i.type==="credit") c+=i.amount;
+            else d+=i.amount;
         });
-
-        let option=document.createElement("option");
-        option.value=name;
-        option.text=`${name} (₹${credit-debit})`;
-
-        dropdown.appendChild(option);
+        let op=document.createElement("option");
+        op.value=name;
+        op.text=`${name} (₹${c-d})`;
+        customerDropdown.appendChild(op);
     }
 }
 
-// SELECT
 function selectCustomer(){
     let name=customerDropdown.value;
     if(!name) return;
-
-    openCustomer(name);
-}
-
-// OPEN
-function openCustomer(name){
-    customerTitle.innerText=name;
+    currentCustomer=name;
     transactionSection.style.display="block";
-    window.currentCustomer=name;
     renderTransactions();
 }
 
-// ADD TRANSACTION
 function addTransaction(type){
     let amt=parseInt(amount.value);
-    if(isNaN(amt)) return alert("Enter amount");
+    if(isNaN(amt)) return;
 
     customers[currentCustomer].push({
         amount:amt,
         type,
         date:date.value,
-        reminder:reminderDate.value,
         note:note.value
     });
 
@@ -263,36 +225,28 @@ function addTransaction(type){
     note.value="";
 }
 
-// RENDER
 function renderTransactions(){
     let list=transactions;
     list.innerHTML="";
-
-    let credit=0,debit=0;
+    let c=0,d=0;
 
     customers[currentCustomer].forEach((i,index)=>{
+        if(i.type==="credit") c+=i.amount;
+        else d+=i.amount;
+
         let li=document.createElement("li");
-
-        if(i.type==="credit") credit+=i.amount;
-        else debit+=i.amount;
-
         li.innerHTML=`
-        <span class="${i.type}">
-        ${i.type==="credit"?"➕":"➖"} ₹${i.amount}<br>
-        📝 ${i.note||""}
-        </span>
+        <span class="${i.type}">₹${i.amount} - ${i.note||""}</span>
         <button onclick="deleteTransaction(${index})">❌</button>
         `;
-
         list.appendChild(li);
     });
 
-    creditTotal.innerText=credit;
-    debitTotal.innerText=debit;
-    balance.innerText=credit-debit;
+    creditTotal.innerText=c;
+    debitTotal.innerText=d;
+    balance.innerText=c-d;
 }
 
-// DELETE
 function deleteTransaction(i){
     customers[currentCustomer].splice(i,1);
     save();
@@ -300,20 +254,16 @@ function deleteTransaction(i){
     updateDashboard();
 }
 
-// BACK
 function goBack(){
     transactionSection.style.display="none";
 }
 
-// SAVE
 function save(){
     localStorage.setItem("customers", JSON.stringify(customers));
 }
 
-// INIT
 renderCustomers();
 updateDashboard();
-
 </script>
 
 </body>
