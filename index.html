@@ -7,42 +7,112 @@
 <style>
 body {
     font-family: Arial;
-    background: linear-gradient(135deg,#1d2671,#c33764);
+    background: linear-gradient(135deg,#0f2027,#2c5364);
     margin:0;
+    color:white;
 }
 
+/* CONTAINER */
 .container {
-    width:370px;
+    width:380px;
     margin:20px auto;
-    background:white;
+    background: rgba(255,255,255,0.05);
     padding:15px;
-    border-radius:15px;
+    border-radius:20px;
+    backdrop-filter: blur(12px);
 }
 
-input, select, button {
+/* INPUT */
+input, select {
     width:100%;
     padding:10px;
-    margin:5px 0;
-    border-radius:8px;
-}
-
-button {
-    background:#1d2671;
-    color:white;
+    margin:6px 0;
+    border-radius:10px;
     border:none;
 }
 
+/* BUTTON */
+button {
+    width:100%;
+    padding:12px;
+    margin:6px 0;
+    border:none;
+    border-radius:10px;
+    background: linear-gradient(135deg,#ff7e5f,#feb47b);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.4s;
+    box-shadow:0 0 10px rgba(255,126,95,0.6);
+}
+
+button:hover {
+    transform: scale(1.08);
+    background: linear-gradient(135deg,#36d1dc,#5b86e5);
+    box-shadow:0 0 20px rgba(91,134,229,0.8);
+}
+
+/* DASHBOARD */
+.dashboard {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    padding:12px;
+    border-radius:12px;
+    text-align:center;
+    animation: float 3s ease-in-out infinite;
+    transition:0.4s;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow:0 0 20px rgba(255,255,255,0.2);
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0px); }
+}
+
+/* DROPDOWN */
+select option {
+    animation: fadeIn 0.5s ease-in;
+}
+
+select:hover {
+    box-shadow:0 0 10px rgba(255,255,255,0.4);
+}
+
+/* LIST */
 li {
-    background:#f9f9f9;
+    background: rgba(255,255,255,0.1);
     margin:6px 0;
     padding:10px;
     border-radius:10px;
     display:flex;
     justify-content:space-between;
+    transition:0.3s;
 }
 
-.credit { color:red; font-weight:bold; }
-.debit { color:green; font-weight:bold; }
+li:hover {
+    transform: scale(1.03);
+    box-shadow:0 0 10px rgba(255,255,255,0.2);
+}
+
+.credit { color:#ff6b6b; font-weight:bold; }
+.debit { color:#00ffae; font-weight:bold; }
+
+/* TEXT ANIMATION */
+@keyframes fadeIn {
+    from { opacity:0; transform:translateY(5px); }
+    to { opacity:1; transform:translateY(0); }
+}
 </style>
 </head>
 
@@ -50,15 +120,23 @@ li {
 
 <div class="container">
 
-<h2>📒 Sambhu Khata</h2>
+<h2>📊 Sambhu Khata</h2>
 
-<input id="searchCustomer" placeholder="Search" onkeyup="renderCustomers()">
+<!-- DASHBOARD -->
+<div class="dashboard">
+<div class="card">💰 Total Credit<br><span id="totalCredit">0</span></div>
+<div class="card">💸 Total Debit<br><span id="totalDebit">0</span></div>
+<div class="card">📊 Balance<br><span id="totalBalance">0</span></div>
+<div class="card">👥 Customers<br><span id="totalCustomers">0</span></div>
+</div>
+
+<input id="searchCustomer" placeholder="🔍 Search" onkeyup="renderCustomers()">
 
 <input id="customerName" placeholder="Add Customer">
-<button onclick="addCustomer()">Add Customer</button>
+<button onclick="addCustomer()">➕ Add Customer</button>
 
 <select id="customerDropdown" onchange="selectCustomer()">
-<option value="">Select Customer</option>
+<option>Select Customer</option>
 </select>
 
 <div id="selectedInfo"></div>
@@ -70,10 +148,10 @@ li {
 <input id="amount" type="number" placeholder="Amount">
 <input id="date" type="date">
 <input id="reminderDate" type="date">
-<input id="note" type="text" placeholder="📝 Add note">
+<input id="note" placeholder="📝 Note">
 
-<button onclick="addTransaction('credit')">Credit</button>
-<button onclick="addTransaction('debit')">Debit</button>
+<button onclick="addTransaction('credit')">➕ Credit</button>
+<button onclick="addTransaction('debit')">➖ Debit</button>
 
 <h4>
 Credit: ₹ <span id="creditTotal">0</span> |
@@ -83,36 +161,33 @@ Balance: ₹ <span id="balance">0</span>
 
 <ul id="transactions"></ul>
 
-<button onclick="goBack()">Back</button>
+<button onclick="goBack()">⬅️ Back</button>
 
 </div>
 
 </div>
 
 <script>
-// 🔥 YOUR DATA RESTORED
-let customers = {
-"subhankar":[],
-"abu babu":[],
-"papu pici ghar":[],
-"arghya":[],
-"Arghya wife":[],
-"dr. satyajit":[],
-"suva biker jone":[],
-"Prasenjit Barhat":[],
-"Braja Babu":[
-{"amount":600,"type":"credit","date":"","reminder":""},
-{"amount":4000,"type":"credit","date":"","reminder":""}
-],
-"Amiya":[],
-"Paritosh":[],
-"bisu Pnb":[],
-"Chayanika Studio":[],
-"HM PINTU":[]
-};
 
-// save once
-localStorage.setItem("customers", JSON.stringify(customers));
+// LOAD DATA
+let customers = JSON.parse(localStorage.getItem("customers")) || {};
+
+// DASHBOARD
+function updateDashboard(){
+    let totalC=0,totalD=0;
+
+    for(let c in customers){
+        customers[c].forEach(i=>{
+            if(i.type==="credit") totalC+=i.amount;
+            else totalD+=i.amount;
+        });
+    }
+
+    document.getElementById("totalCredit").innerText = totalC;
+    document.getElementById("totalDebit").innerText = totalD;
+    document.getElementById("totalBalance").innerText = totalC-totalD;
+    document.getElementById("totalCustomers").innerText = Object.keys(customers).length;
+}
 
 // ADD CUSTOMER
 function addCustomer(){
@@ -122,6 +197,7 @@ function addCustomer(){
     if(!customers[name]) customers[name]=[];
     save();
     renderCustomers();
+    updateDashboard();
     customerName.value="";
 }
 
@@ -130,7 +206,7 @@ function renderCustomers(){
     let dropdown=customerDropdown;
     let search=searchCustomer.value.toLowerCase();
 
-    dropdown.innerHTML=`<option value="">Select Customer</option>`;
+    dropdown.innerHTML=`<option>Select Customer</option>`;
 
     for(let name in customers){
         if(!name.toLowerCase().includes(search)) continue;
@@ -142,11 +218,9 @@ function renderCustomers(){
             else debit+=i.amount;
         });
 
-        let balance=credit-debit;
-
         let option=document.createElement("option");
         option.value=name;
-        option.text=`${name} (₹${balance})`;
+        option.text=`${name} (₹${credit-debit})`;
 
         dropdown.appendChild(option);
     }
@@ -157,35 +231,13 @@ function selectCustomer(){
     let name=customerDropdown.value;
     if(!name) return;
 
-    let credit=0,debit=0;
-
-    customers[name].forEach(i=>{
-        if(i.type==="credit") credit+=i.amount;
-        else debit+=i.amount;
-    });
-
-    let balance=credit-debit;
-    let info=document.getElementById("selectedInfo");
-
-    if(balance>0){
-        info.innerHTML=`🔴 ${name} owes you ₹${balance}`;
-        info.style.color="red";
-    }
-    else if(balance<0){
-        info.innerHTML=`🟢 You owe ${name} ₹${Math.abs(balance)}`;
-        info.style.color="green";
-    }
-    else{
-        info.innerHTML="All clear";
-    }
-
     openCustomer(name);
 }
 
 // OPEN
 function openCustomer(name){
     customerTitle.innerText=name;
-    document.getElementById("transactionSection").style.display="block";
+    transactionSection.style.display="block";
     window.currentCustomer=name;
     renderTransactions();
 }
@@ -193,22 +245,19 @@ function openCustomer(name){
 // ADD TRANSACTION
 function addTransaction(type){
     let amt=parseInt(amount.value);
-    let d=date.value;
-    let r=reminderDate.value;
-    let noteVal=note.value;
-
     if(isNaN(amt)) return alert("Enter amount");
 
     customers[currentCustomer].push({
         amount:amt,
         type,
-        date:d,
-        reminder:r,
-        note:noteVal
+        date:date.value,
+        reminder:reminderDate.value,
+        note:note.value
     });
 
     save();
     renderTransactions();
+    updateDashboard();
 
     amount.value="";
     note.value="";
@@ -229,10 +278,8 @@ function renderTransactions(){
 
         li.innerHTML=`
         <span class="${i.type}">
-        ${i.type==="credit"?"➕":"➖"} ₹${i.amount}
-        (${i.date||""})<br>
-        🔔 ${i.reminder||"No"}<br>
-        📝 ${i.note||"No note"}
+        ${i.type==="credit"?"➕":"➖"} ₹${i.amount}<br>
+        📝 ${i.note||""}
         </span>
         <button onclick="deleteTransaction(${index})">❌</button>
         `;
@@ -250,10 +297,12 @@ function deleteTransaction(i){
     customers[currentCustomer].splice(i,1);
     save();
     renderTransactions();
+    updateDashboard();
 }
 
+// BACK
 function goBack(){
-    document.getElementById("transactionSection").style.display="none";
+    transactionSection.style.display="none";
 }
 
 // SAVE
@@ -261,7 +310,10 @@ function save(){
     localStorage.setItem("customers", JSON.stringify(customers));
 }
 
+// INIT
 renderCustomers();
+updateDashboard();
+
 </script>
 
 </body>
