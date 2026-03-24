@@ -14,7 +14,6 @@ body {
     color:white;
 }
 
-/* CONTAINER */
 .container {
     width:380px;
     margin:20px auto;
@@ -24,19 +23,17 @@ body {
     backdrop-filter: blur(12px);
 }
 
-/* 🌈 MOVING GRADIENT TITLE */
+/* 🌈 TITLE */
 .title {
     text-align:center;
     font-family:'Poppins', sans-serif;
     font-size:28px;
     font-weight:bold;
-
-    background: linear-gradient(270deg,#ff7e5f,#feb47b,#36d1dc,#5b86e5,#ff7e5f);
+    background: linear-gradient(270deg,#ff7e5f,#feb47b,#36d1dc,#5b86e5);
     background-size:1000% 100%;
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
-
-    animation: gradientMove 6s ease infinite;
+    animation: gradientMove 6s infinite;
 }
 
 @keyframes gradientMove {
@@ -45,7 +42,6 @@ body {
     100% {background-position:0%}
 }
 
-/* INPUT */
 input, select {
     width:100%;
     padding:10px;
@@ -54,7 +50,6 @@ input, select {
     border:none;
 }
 
-/* BUTTON */
 button {
     width:100%;
     padding:12px;
@@ -63,19 +58,9 @@ button {
     border-radius:10px;
     background: linear-gradient(135deg,#ff7e5f,#feb47b);
     color:white;
-    font-weight:bold;
     cursor:pointer;
-    transition:0.4s;
-    box-shadow:0 0 10px rgba(255,126,95,0.6);
 }
 
-button:hover {
-    transform: scale(1.08);
-    background: linear-gradient(135deg,#36d1dc,#5b86e5);
-    box-shadow:0 0 20px rgba(91,134,229,0.8);
-}
-
-/* DASHBOARD */
 .dashboard {
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -87,16 +72,8 @@ button:hover {
     padding:12px;
     border-radius:12px;
     text-align:center;
-    animation: float 3s ease-in-out infinite;
 }
 
-@keyframes float {
-    0% {transform: translateY(0px);}
-    50% {transform: translateY(-6px);}
-    100% {transform: translateY(0px);}
-}
-
-/* LIST */
 li {
     background: rgba(255,255,255,0.1);
     margin:6px 0;
@@ -117,12 +94,11 @@ li {
 
 <h2 class="title">Sambhu Khata</h2>
 
-<!-- DASHBOARD -->
 <div class="dashboard">
-<div class="card">💰 Credit<br><span id="totalCredit">0</span></div>
-<div class="card">💸 Debit<br><span id="totalDebit">0</span></div>
-<div class="card">📊 Balance<br><span id="totalBalance">0</span></div>
-<div class="card">👥 Customers<br><span id="totalCustomers">0</span></div>
+<div class="card">Credit<br><span id="totalCredit">0</span></div>
+<div class="card">Debit<br><span id="totalDebit">0</span></div>
+<div class="card">Balance<br><span id="totalBalance">0</span></div>
+<div class="card">Customers<br><span id="totalCustomers">0</span></div>
 </div>
 
 <input id="customerName" placeholder="Add Customer">
@@ -155,9 +131,51 @@ Balance: ₹ <span id="balance">0</span>
 
 </div>
 
-<script>
-let customers = JSON.parse(localStorage.getItem("customers")) || {};
+<!-- 🔥 FIREBASE -->
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAKMVIQ1AN32iNxFDnA-5p8vfJMQnetb8w",
+  authDomain: "sambhukhata.firebaseapp.com",
+  projectId: "sambhukhata",
+  storageBucket: "sambhukhata.firebasestorage.app",
+  messagingSenderId: "34928539639",
+  appId: "1:34928539639:web:a8c8dccea7d25987cc60f2",
+  measurementId: "G-55JGRJ60GZ"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let customers = {};
+
+// 🔥 LOAD DATA FROM FIREBASE
+async function loadData(){
+    const ref = doc(db, "khata", "data");
+    const snap = await getDoc(ref);
+
+    if(snap.exists()){
+        customers = snap.data().customers || {};
+    }
+
+    renderCustomers();
+    updateDashboard();
+}
+loadData();
+
+// SAVE
+async function save(){
+    localStorage.setItem("customers", JSON.stringify(customers));
+
+    await setDoc(doc(db,"khata","data"),{
+        customers:customers
+    });
+}
+
+// DASHBOARD
 function updateDashboard(){
     let c=0,d=0;
     for(let name in customers){
@@ -172,9 +190,11 @@ function updateDashboard(){
     totalCustomers.innerText=Object.keys(customers).length;
 }
 
-function addCustomer(){
+// ADD CUSTOMER
+window.addCustomer=function(){
     let name=customerName.value;
     if(!name) return;
+
     if(!customers[name]) customers[name]=[];
     save();
     renderCustomers();
@@ -182,6 +202,7 @@ function addCustomer(){
     customerName.value="";
 }
 
+// RENDER
 function renderCustomers(){
     customerDropdown.innerHTML="<option>Select Customer</option>";
     for(let name in customers){
@@ -190,6 +211,7 @@ function renderCustomers(){
             if(i.type==="credit") c+=i.amount;
             else d+=i.amount;
         });
+
         let op=document.createElement("option");
         op.value=name;
         op.text=`${name} (₹${c-d})`;
@@ -197,15 +219,18 @@ function renderCustomers(){
     }
 }
 
-function selectCustomer(){
+// SELECT
+window.selectCustomer=function(){
     let name=customerDropdown.value;
     if(!name) return;
+
     currentCustomer=name;
     transactionSection.style.display="block";
     renderTransactions();
 }
 
-function addTransaction(type){
+// ADD TRANSACTION
+window.addTransaction=function(type){
     let amt=parseInt(amount.value);
     if(isNaN(amt)) return;
 
@@ -224,6 +249,7 @@ function addTransaction(type){
     note.value="";
 }
 
+// RENDER TRANSACTION
 function renderTransactions(){
     let list=transactions;
     list.innerHTML="";
@@ -235,7 +261,7 @@ function renderTransactions(){
 
         let li=document.createElement("li");
         li.innerHTML=`
-        <span class="${i.type}">₹${i.amount} - ${i.note||""}</span>
+        <span class="${i.type}">₹${i.amount}</span>
         <button onclick="deleteTransaction(${index})">❌</button>
         `;
         list.appendChild(li);
@@ -246,23 +272,18 @@ function renderTransactions(){
     balance.innerText=c-d;
 }
 
-function deleteTransaction(i){
+// DELETE
+window.deleteTransaction=function(i){
     customers[currentCustomer].splice(i,1);
     save();
     renderTransactions();
     updateDashboard();
 }
 
-function goBack(){
+window.goBack=function(){
     transactionSection.style.display="none";
 }
 
-function save(){
-    localStorage.setItem("customers", JSON.stringify(customers));
-}
-
-renderCustomers();
-updateDashboard();
 </script>
 
 </body>
