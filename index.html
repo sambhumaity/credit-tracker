@@ -1,78 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Sambhu Khata</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
 body {
-    font-family: Arial;
-    background: linear-gradient(135deg,#0f2027,#2c5364);
+    font-family: 'Poppins', sans-serif;
     margin:0;
     color:white;
+    background: linear-gradient(270deg,#0f2027,#203a43,#2c5364);
+    background-size:600% 600%;
+    animation:bgMove 10s ease infinite;
+}
+
+@keyframes bgMove {
+    0%{background-position:0%}
+    50%{background-position:100%}
+    100%{background-position:0%}
 }
 
 .container {
-    width:380px;
+    width:360px;
     margin:20px auto;
-    background: rgba(255,255,255,0.05);
-    padding:15px;
+    padding:20px;
     border-radius:20px;
-    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
 }
 
-/* 🌈 TITLE */
 .title {
     text-align:center;
-    font-family:'Poppins', sans-serif;
-    font-size:28px;
-    font-weight:bold;
+    font-size:26px;
+    font-weight:700;
     background: linear-gradient(270deg,#ff7e5f,#feb47b,#36d1dc,#5b86e5);
-    background-size:1000% 100%;
+    background-size:800%;
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
-    animation: gradientMove 6s infinite;
+    animation:gradientMove 6s infinite;
 }
 
 @keyframes gradientMove {
-    0% {background-position:0%}
-    50% {background-position:100%}
-    100% {background-position:0%}
-}
-
-input, select {
-    width:100%;
-    padding:10px;
-    margin:6px 0;
-    border-radius:10px;
-    border:none;
-}
-
-button {
-    width:100%;
-    padding:12px;
-    margin:6px 0;
-    border:none;
-    border-radius:10px;
-    background: linear-gradient(135deg,#ff7e5f,#feb47b);
-    color:white;
-    cursor:pointer;
+    0%{background-position:0%}
+    50%{background-position:100%}
+    100%{background-position:0%}
 }
 
 .dashboard {
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:10px;
+    margin:15px 0;
 }
 
 .card {
-    background: rgba(255,255,255,0.08);
-    padding:12px;
-    border-radius:12px;
+    padding:15px;
+    border-radius:15px;
+    background: rgba(255,255,255,0.1);
     text-align:center;
 }
+
+input, select {
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin:6px 0;
+}
+
+button {
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    margin:6px 0;
+    background: linear-gradient(135deg,#ff7e5f,#feb47b);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.credit {color:#ff6b6b;}
+.debit {color:#00ffae;}
 
 li {
     background: rgba(255,255,255,0.1);
@@ -82,9 +93,6 @@ li {
     display:flex;
     justify-content:space-between;
 }
-
-.credit {color:#ff6b6b;}
-.debit {color:#00ffae;}
 </style>
 </head>
 
@@ -95,14 +103,14 @@ li {
 <h2 class="title">Sambhu Khata</h2>
 
 <div class="dashboard">
-<div class="card">Credit<br><span id="totalCredit">0</span></div>
-<div class="card">Debit<br><span id="totalDebit">0</span></div>
-<div class="card">Balance<br><span id="totalBalance">0</span></div>
-<div class="card">Customers<br><span id="totalCustomers">0</span></div>
+<div class="card">💰 Credit<br><span id="totalCredit">0</span></div>
+<div class="card">💸 Debit<br><span id="totalDebit">0</span></div>
+<div class="card">📊 Balance<br><span id="totalBalance">0</span></div>
+<div class="card">👥 Customers<br><span id="totalCustomers">0</span></div>
 </div>
 
 <input id="customerName" placeholder="Add Customer">
-<button onclick="addCustomer()">Add Customer</button>
+<button onclick="addCustomer()">+ Add Customer</button>
 
 <select id="customerDropdown" onchange="selectCustomer()">
 <option>Select Customer</option>
@@ -115,8 +123,8 @@ li {
 <input id="date" type="date">
 <input id="note" placeholder="Note">
 
-<button onclick="addTransaction('credit')">Credit</button>
-<button onclick="addTransaction('debit')">Debit</button>
+<button onclick="addTransaction('credit')">➕ Credit</button>
+<button onclick="addTransaction('debit')">➖ Debit</button>
 
 <h4>
 Credit: ₹ <span id="creditTotal">0</span> |
@@ -126,12 +134,11 @@ Balance: ₹ <span id="balance">0</span>
 
 <ul id="transactions"></ul>
 
-<button onclick="goBack()">Back</button>
+<button onclick="goBack()">⬅ Back</button>
 </div>
 
 </div>
 
-<!-- 🔥 FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
@@ -143,18 +150,18 @@ const firebaseConfig = {
   projectId: "sambhukhata",
   storageBucket: "sambhukhata.firebasestorage.app",
   messagingSenderId: "34928539639",
-  appId: "1:34928539639:web:a8c8dccea7d25987cc60f2",
-  measurementId: "G-55JGRJ60GZ"
+  appId: "1:34928539639:web:a8c8dccea7d25987cc60f2"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let customers = {};
+let currentCustomer = "";
 
-// 🔥 LOAD DATA FROM FIREBASE
+// LOAD
 async function loadData(){
-    const ref = doc(db, "khata", "data");
+    const ref = doc(db,"khata","data");
     const snap = await getDoc(ref);
 
     if(snap.exists()){
@@ -168,8 +175,6 @@ loadData();
 
 // SAVE
 async function save(){
-    localStorage.setItem("customers", JSON.stringify(customers));
-
     await setDoc(doc(db,"khata","data"),{
         customers:customers
     });
@@ -191,8 +196,8 @@ function updateDashboard(){
 }
 
 // ADD CUSTOMER
-window.addCustomer=function(){
-    let name=customerName.value;
+window.addCustomer = function(){
+    let name = customerName.value;
     if(!name) return;
 
     if(!customers[name]) customers[name]=[];
@@ -202,7 +207,7 @@ window.addCustomer=function(){
     customerName.value="";
 }
 
-// RENDER
+// RENDER CUSTOMERS
 function renderCustomers(){
     customerDropdown.innerHTML="<option>Select Customer</option>";
     for(let name in customers){
@@ -219,24 +224,33 @@ function renderCustomers(){
     }
 }
 
-// SELECT
-window.selectCustomer=function(){
-    let name=customerDropdown.value;
-    if(!name) return;
+// SELECT CUSTOMER
+window.selectCustomer = function(){
+    let name = customerDropdown.value;
+    if(!name || name==="Select Customer") return;
 
-    currentCustomer=name;
+    currentCustomer = name;
+
     transactionSection.style.display="block";
+    customerTitle.innerText=name;
+
     renderTransactions();
 }
 
-// ADD TRANSACTION
-window.addTransaction=function(type){
+// ADD TRANSACTION (FIXED)
+window.addTransaction = function(type){
     let amt=parseInt(amount.value);
+
+    if(!currentCustomer){
+        alert("Select customer first");
+        return;
+    }
+
     if(isNaN(amt)) return;
 
     customers[currentCustomer].push({
         amount:amt,
-        type,
+        type:type,
         date:date.value,
         note:note.value
     });
@@ -249,10 +263,11 @@ window.addTransaction=function(type){
     note.value="";
 }
 
-// RENDER TRANSACTION
+// RENDER TRANSACTIONS
 function renderTransactions(){
     let list=transactions;
     list.innerHTML="";
+
     let c=0,d=0;
 
     customers[currentCustomer].forEach((i,index)=>{
@@ -280,6 +295,7 @@ window.deleteTransaction=function(i){
     updateDashboard();
 }
 
+// BACK
 window.goBack=function(){
     transactionSection.style.display="none";
 }
